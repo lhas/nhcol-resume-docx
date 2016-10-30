@@ -135,24 +135,140 @@
 	if(!empty($_GET['download'])) {
 		require_once "docx-lib/vendor/autoload.php";
 
+
+		$titleStyle = array('size' => 20, 'bold' => true);
+
 		// Creating the new document...
 		$phpWord = new \PhpOffice\PhpWord\PhpWord();
 
 		// Adding an empty Section to the document...
 		$section = $phpWord->addSection();
-		// Adding Text element to the Section having font styled by default...
-		$section->addText(
-				'"Learn from yesterday, live for today, hope for tomorrow. '
-						. 'The important thing is not to stop questioning." '
-						. '(Albert Einstein)'
-		);
 
+		// First the table with resume
+		$table = $section->addTable();
+
+		// a new row at the table
+		$table->addRow(200);
+
+		// profile name
+		$table->addCell(3600)->addText("Beraterprofil: " . get_the_title());
+
+		// profile image
+		$logo = get_the_candidate_photo( $post );
+		$logo = job_manager_get_resized_image( $logo, 'medium' );
+
+		if(!empty($logo)) {
+			$table->addCell(3600)->addImage($logo, array('width' => 200, 'height' => 200));
+		} else {
+			$table->addCell(3600)->addText("Profile image not found.");
+		}
+
+		// a new row at the table
+		$table->addRow(200);
+
+		// german translate
+		$table->addCell(4800)->addText("Personliche Daten des Beraters");
+
+		// a new row at the table
+		$table->addRow(200);
+
+		// Jahrgang
+		$table->addCell(3600)->addText("Jahrgang");
+		$table->addCell(3600)->addText(get_post_meta( $post->ID, '_candidate_jahrgang', true ));
+
+		// a new row at the table
+		$table->addRow(200);
+
+		// Projekterfahrung seit
+		$table->addCell(3600)->addText("Projekterfahrung seit");
+		$table->addCell(3600)->addText(get_post_meta( $post->ID, '_candidate_projects_since', true ));
+
+		// a new row at the table
+		$table->addRow(200);
+
+		// Staatsbürgerschaft
+		$table->addCell(3600)->addText("Staatsbürgerschaft");
+		$table->addCell(3600)->addText(get_post_meta( $post->ID, '_candidate_staatsbuergerschaft', true ));
+
+		$section->addTextBreak(1);
+
+		// ZUSAMMENFASSUNG
+		$section->addText('ZUSAMMENFASSUNG', $titleStyle);
+		$content = get_the_content();
+		$section->addText($content);
+
+		// LEISTUNGBILANZ
+		$section->addText('LEISTUNGBILANZ', $titleStyle);
+		$content = get_post_meta( $post->ID, '_candidate_performance_track', true );
+		$section->addText($content);
+
+		// Education
+		$section->addText(__( 'Education', 'wp-job-manager-resumes' ), $titleStyle);
+
+		$educationItems = get_post_meta( $post->ID, '_candidate_education', true );
+
+		if(!empty($educationItems)) {
+			foreach($educationItems as $item) {
+
+				$section->addTextBreak(1);
+
+				if(!empty($item['date'] )) {
+					$section->addListItem('Date: ' . esc_html( $item['date'] ), 0, null);
+				}
+
+				if(!empty($item['location'] )) {
+					$section->addListItem('Location: ' . esc_html( $item['location'] ), 0, null);
+				}
+				
+				if(!empty($item['qualification'] )) {
+					$section->addListItem('Qualification: ' . esc_html( $item['qualification'] ), 0, null);
+				}
+
+				if(!empty($item['notes'] )) {
+					$section->addListItem('Notes: ' . wpautop( wptexturize( $item['notes'] ) ), 0, null);
+				}
+			}
+		}
+
+		// Experience
+		$section->addText(__( 'Experience', 'wp-job-manager-resumes' ), $titleStyle);
+
+		$experienceItems = get_post_meta( $post->ID, '_candidate_experience', true );
+
+		if(!empty($experienceItems)) {
+			foreach($experienceItems as $item) {
+
+				$section->addTextBreak(1);
+
+				if(!empty($item['date'] )) {
+					$section->addListItem('Date: ' . esc_html( $item['date'] ), 0, null);
+				}
+
+				if(!empty($item['job_title'] )) {
+					$section->addListItem('Job Title: ' . esc_html( $item['job_title'] ), 0, null);
+				}
+				
+				if(!empty($item['employer'] )) {
+					$section->addListItem('Employer: ' . esc_html( $item['employer'] ), 0, null);
+				}
+
+				if(!empty($item['project_description'] )) {
+					$section->addListItem('Project Description: ' . wpautop( wptexturize( $item['project_description'] ) ), 0, null);
+				}
+				
+				if(!empty($item['notes'] )) {
+					$section->addListItem('Notes: ' . wpautop( wptexturize( $item['notes'] ) ), 0, null);
+				}
+			}
+		}
+
+		// store the resume at a public folder
 		$objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-		$objWriter->save('wp-content/uploads/resumes/helloWorld.docx');
+		$objWriter->save('wp-content/uploads/resumes/resume.docx');
 ?>
 
 <script type="text/javascript">
-	var resumeUrl = "<?php echo wp_upload_dir()['baseurl']; ?>/resumes/helloWorld.docx";
+	var resumeUrl = "<?php echo wp_upload_dir()['baseurl']; ?>/resumes/resume.docx";
 
 	window.location.href = resumeUrl;
 </script>
