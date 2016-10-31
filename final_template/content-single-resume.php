@@ -126,7 +126,7 @@
 <?php do_action( 'single_resume_start' ); ?>
 
 <!-- Begin Download resume as .docx -->
-<a id="print-it" href="<?php echo add_query_arg( 'download', true, get_permalink( $post->ID ) ); ?>	">
+<a id="print-it" href="<?php echo add_query_arg( 'download', true, get_permalink( $post->ID ) ); ?>#download">
 	<span class="dashicons dashicons-download"></span> <?php _e( 'Download resume as .docx', 'wp-job-manager-resumes' ); ?>
 </a>
 
@@ -144,51 +144,39 @@
 		// Adding an empty Section to the document...
 		$section = $phpWord->addSection();
 
-		// First the table with resume
-		$table = $section->addTable();
 
-		// a new row at the table
-		$table->addRow(200);
-
-		// profile name
-		$table->addCell(3600)->addText("Beraterprofil: " . get_the_title());
+		// Beraterprofil
+		$section->addText('Beraterprofil', $titleStyle);
+		$section->addText(get_the_title());
 
 		// profile image
 		$logo = get_the_candidate_photo( $post );
 		$logo = job_manager_get_resized_image( $logo, 'medium' );
 
+		$section->addTextBreak(1);
+
 		if(!empty($logo)) {
-			$table->addCell(3600)->addImage($logo, array('width' => 200, 'height' => 200));
+			$section->addImage($logo, array('width' => 200, 'height' => 200));
 		} else {
-			$table->addCell(3600)->addText("Profile image not found.");
+			$section->addText("Profile image not found.");
 		}
 
-		// a new row at the table
-		$table->addRow(200);
+		// Personliche Daten des Beraters
+		$section->addText('Personliche Daten des Beraters', $titleStyle);
 
-		// german translate
-		$table->addCell(4800)->addText("Personliche Daten des Beraters");
-
-		// a new row at the table
-		$table->addRow(200);
+		$section->addTextBreak(1);
 
 		// Jahrgang
-		$table->addCell(3600)->addText("Jahrgang");
-		$table->addCell(3600)->addText(get_post_meta( $post->ID, '_candidate_jahrgang', true ));
-
-		// a new row at the table
-		$table->addRow(200);
+		$section->addText('Jahrgang', $titleStyle);
+		$section->addText(get_post_meta( $post->ID, '_candidate_jahrgang', true ));
 
 		// Projekterfahrung seit
-		$table->addCell(3600)->addText("Projekterfahrung seit");
-		$table->addCell(3600)->addText(get_post_meta( $post->ID, '_candidate_projects_since', true ));
-
-		// a new row at the table
-		$table->addRow(200);
+		$section->addText('Projekterfahrung seit', $titleStyle);
+		$section->addText(get_post_meta( $post->ID, '_candidate_projects_since', true ));
 
 		// Staatsbürgerschaft
-		$table->addCell(3600)->addText("Staatsbürgerschaft");
-		$table->addCell(3600)->addText(get_post_meta( $post->ID, '_candidate_staatsbuergerschaft', true ));
+		$section->addText('Staatsbürgerschaft', $titleStyle);
+		$section->addText(get_post_meta( $post->ID, '_candidate_staatsbuergerschaft', true ));
 
 		$section->addTextBreak(1);
 
@@ -264,14 +252,10 @@
 
 		// store the resume at a public folder
 		$objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
-		$objWriter->save('wp-content/uploads/resumes/resume.docx');
+		$objWriter->save('wp-content/uploads/resumes/' . $post->post_name . '.docx');
 ?>
 
-<script type="text/javascript">
-	var resumeUrl = "<?php echo wp_upload_dir()['baseurl']; ?>/resumes/resume.docx";
-
-	window.location.href = resumeUrl;
-</script>
+<a id="download" href="<?php echo wp_upload_dir()['baseurl']; ?>/resumes/<?php echo $post->post_name; ?>.docx" style="display: block; box-shadow: none;">Click here to start the download</a>
 <?php } ?>
 
 <!-- Begin Download resume as .docx -->
