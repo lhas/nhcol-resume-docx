@@ -144,111 +144,117 @@
 		// Adding an empty Section to the document...
 		$section = $phpWord->addSection();
 
-
-		// Beraterprofil
-		$section->addText('Beraterprofil', $titleStyle);
-		$section->addText(get_the_title());
-
-		// profile image
 		$logo = get_the_candidate_photo( $post );
 		$logo = job_manager_get_resized_image( $logo, 'medium' );
 
-		$section->addTextBreak(1);
+		$educationItems = get_post_meta( $post->ID, '_candidate_education', true );
+		$experienceItems = get_post_meta( $post->ID, '_candidate_experience', true );
+
+		$content = '<h1>Beraterprofil</h1>';
+		$content .= '<p>' . get_the_title() . '</p>';
 
 		if(!empty($logo)) {
 			$section->addImage($logo, array('width' => 200, 'height' => 200));
-		} else {
-			$section->addText("Profile image not found.");
 		}
 
-		// Personliche Daten des Beraters
-		$section->addText('Personliche Daten des Beraters', $titleStyle);
+		$content .= '<h1>Personliche Daten des Beraters</h1>';
 
-		$section->addTextBreak(1);
+		$content .= '<h1>Jahrgang</h1>';
+		$content .= '<p>' . get_post_meta( $post->ID, '_candidate_jahrgang', true ) . '</p>';
 
-		// Jahrgang
-		$section->addText('Jahrgang', $titleStyle);
-		$section->addText(get_post_meta( $post->ID, '_candidate_jahrgang', true ));
+		$content .= '<h1>Projekterfahrung seit</h1>';
+		$content .= '<p>' . get_post_meta( $post->ID, '_candidate_projects_since', true ) . '</p>';
 
-		// Projekterfahrung seit
-		$section->addText('Projekterfahrung seit', $titleStyle);
-		$section->addText(get_post_meta( $post->ID, '_candidate_projects_since', true ));
+		$content .= '<h1>Staatsbürgerschaft</h1>';
+		$content .= '<p>' . get_post_meta( $post->ID, '_candidate_staatsbuergerschaft', true ) . '</p>';
 
-		// Staatsbürgerschaft
-		$section->addText('Staatsbürgerschaft', $titleStyle);
-		$section->addText(get_post_meta( $post->ID, '_candidate_staatsbuergerschaft', true ));
+		$content .= '<h1>ZUSAMMENFASSUNG</h1>';
+		$content .= '<p>' . get_the_content() . '</p>';
 
-		$section->addTextBreak(1);
+		$content .= '<h1>LEISTUNGBILANZ</h1>';
+		$content .= '<p>' . get_post_meta( $post->ID, '_candidate_performance_track', true ) . '</p>';
 
-		// ZUSAMMENFASSUNG
-		$section->addText('ZUSAMMENFASSUNG', $titleStyle);
-		$content = get_the_content();
-		$section->addText($content);
-
-		// LEISTUNGBILANZ
-		$section->addText('LEISTUNGBILANZ', $titleStyle);
-		$content = get_post_meta( $post->ID, '_candidate_performance_track', true );
-		$section->addText($content);
-
-		// Education
-		$section->addText(__( 'Education', 'wp-job-manager-resumes' ), $titleStyle);
-
-		$educationItems = get_post_meta( $post->ID, '_candidate_education', true );
+		$content .= '<h1>Education</h1>';
 
 		if(!empty($educationItems)) {
+			$content .= '<ul>';
 			foreach($educationItems as $item) {
-
-				$section->addTextBreak(1);
+				$content .= '<ol>';
 
 				if(!empty($item['date'] )) {
-					$section->addListItem('Date: ' . esc_html( $item['date'] ), 0, null);
+					$content .= '<li>';
+					$content .= "Date: " . esc_html( $item['date'] ) . "";
+					$content .= '</li>';
 				}
 
 				if(!empty($item['location'] )) {
-					$section->addListItem('Location: ' . esc_html( $item['location'] ), 0, null);
+					$content .= '<li>';
+					$content .= "Location: " . esc_html( $item['location'] ) . "";
+					$content .= '</li>';
 				}
-				
+
 				if(!empty($item['qualification'] )) {
-					$section->addListItem('Qualification: ' . esc_html( $item['qualification'] ), 0, null);
+					$content .= '<li>';
+					$content .= "Qualification: " . esc_html( $item['qualification'] ) . "";
+					$content .= '</li>';
 				}
 
 				if(!empty($item['notes'] )) {
-					$section->addListItem('Notes: ' . wpautop( wptexturize( $item['notes'] ) ), 0, null);
+					$content .= '<li>';
+					$content .= "Notes: " . wpautop( wptexturize( $item['notes'] ) ) . "";
+					$content .= '</li>';
 				}
+
+				$content .= '</ol>';
+
 			}
+			$content .= '</ul>';
 		}
 
-		// Experience
-		$section->addText(__( 'Experience', 'wp-job-manager-resumes' ), $titleStyle);
-
-		$experienceItems = get_post_meta( $post->ID, '_candidate_experience', true );
+		$content .= '<h1>Experience</h1>';
 
 		if(!empty($experienceItems)) {
+			$content .= '<ul>';
 			foreach($experienceItems as $item) {
-
-				$section->addTextBreak(1);
+				$content .= '<ol>';
 
 				if(!empty($item['date'] )) {
-					$section->addListItem('Date: ' . esc_html( $item['date'] ), 0, null);
+					$content .= '<li>';
+					$content .= "Date: " . esc_html( $item['date'] ) . "";
+					$content .= '</li>';
 				}
 
 				if(!empty($item['job_title'] )) {
-					$section->addListItem('Job Title: ' . esc_html( $item['job_title'] ), 0, null);
+					$content .= '<li>';
+					$content .= "Job Title: " . esc_html( $item['job_title'] ) . "";
+					$content .= '</li>';
 				}
-				
+
 				if(!empty($item['employer'] )) {
-					$section->addListItem('Employer: ' . esc_html( $item['employer'] ), 0, null);
+					$content .= '<li>';
+					$content .= "Employer: " . esc_html( $item['employer'] ) . "";
+					$content .= '</li>';
 				}
 
 				if(!empty($item['project_description'] )) {
-					$section->addListItem('Project Description: ' . wpautop( wptexturize( $item['project_description'] ) ), 0, null);
+					$content .= '<li>';
+					$content .= "Project Description: " . wpautop( wptexturize( $item['project_description'] ) ) . "";
+					$content .= '</li>';
 				}
-				
+
 				if(!empty($item['notes'] )) {
-					$section->addListItem('Notes: ' . wpautop( wptexturize( $item['notes'] ) ), 0, null);
+					$content .= '<li>';
+					$content .= "Notes: " . wpautop( wptexturize( $item['notes'] ) ) . "";
+					$content .= '</li>';
 				}
+
+				$content .= '</ol>';
+
 			}
+			$content .= '</ul>';
 		}
+
+		\PhpOffice\PhpWord\Shared\Html::addHtml($section, $content);
 
 		// store the resume at a public folder
 		$objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
